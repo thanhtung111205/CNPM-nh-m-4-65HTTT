@@ -1,0 +1,136 @@
+<?php
+session_start(); // Bắt đầu session để theo dõi trạng thái đăng nhập
+
+// Kiểm tra xem người dùng đã đăng nhập hay chưa
+$is_logged_in = isset($_SESSION['username']); // Kiểm tra nếu session 'username' tồn tại
+
+?>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seven Hair Salon</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+        }
+        header {
+            background-color: #2d89ef;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        nav {
+            display: flex;
+            gap: 20px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        /* Search bar */
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .search-container input[type="text"] {
+            padding: 5px 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            width: 300px;
+        }
+        .search-container button {
+            background-color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .section {
+            margin: 20px auto;
+            max-width: 1200px;
+            padding: 20px;
+        }
+        .section h2 {
+            color: #2d89ef;
+            font-size: 20px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2d89ef;
+            padding-left: 10px;
+        }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .image-grid img {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>SHS - Seven Hair Salon</h1>
+        <nav>
+            <a href="#">TRANG CHỦ</a>
+            <a href="#">ĐẶT LỊCH</a>
+            <a href="#">LỊCH CỦA TÔI</a>
+
+            <?php if ($is_logged_in): ?>
+                <!-- Hiển thị thông tin người dùng nếu đã đăng nhập -->
+                <span>Chào, <?php echo $_SESSION['username']; ?></span>
+                <a href="logout.php">ĐĂNG XUẤT</a> <!-- Liên kết đăng xuất -->
+            <?php else: ?>
+                <!-- Hiển thị liên kết đăng nhập và đăng ký nếu chưa đăng nhập -->
+                <a href="login.php">ĐĂNG NHẬP</a>
+                <a href="register.php">ĐĂNG KÍ</a>
+            <?php endif; ?>
+        </nav>
+    </header>
+
+    <!-- Section: Mẫu tóc hot -->
+    <div class="section">
+        <h2>MẪU TÓC HOT</h2>
+        <div class="image-grid">
+            <img src="images/mau_toc_1.jpg" alt="Mẫu tóc 1">
+            <img src="images/mau_toc_2.jpg" alt="Mẫu tóc 2">
+            <img src="images/mau_toc_3.jpg" alt="Mẫu tóc 3">
+            <img src="images/mau_toc_4.jpg" alt="Mẫu tóc 4">
+        </div>
+    </div>
+
+    <!-- Section: Màu nhuộm hot -->
+    <div class="section">
+        <h2>MÀU NHUỘM HOT</h2>
+        <div class="image-grid">
+            <img src="images/mau_toc_5.jpg" alt="Mẫu tóc 1">
+            <img src="images/mau_toc_6.jpg" alt="Mẫu tóc 2">
+            <img src="images/mau_toc_7.jpg" alt="Mẫu tóc 3">
+            <img src="images/mau_toc_8.jpg" alt="Mẫu tóc 4">
+        </div>
+    </div>
+</body>
+</html>
+
