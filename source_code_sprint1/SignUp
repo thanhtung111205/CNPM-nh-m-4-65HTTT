@@ -2,28 +2,61 @@
 // Bao gồm file kết nối cơ sở dữ liệu
 include 'db.php';
 
+// Hàm kiểm tra email có chứa ký tự đặc biệt không
+function isValidEmail($email) {
+    // Regex kiểm tra email không chứa ký tự đặc biệt
+    return !preg_match('/[^a-zA-Z0-9@._-]/', $email);
+}
+
 // Xử lý đăng ký
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $email = $_POST['email'];
     $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
 
-    // Truy vấn để thêm dữ liệu vào bảng users
-    $sql = "INSERT INTO users (username, email, password) VALUES ('$username', '$email', '$password')";
-    if ($conn->query($sql) === TRUE) {
-        // Đăng ký thành công, lưu thông tin vào session
-        session_start(); // Bắt đầu session
-        $_SESSION['username'] = $username; // Lưu username vào session
-
-        // Điều hướng người dùng về trang chủ sau khi đăng ký thành công
-        header("Location: http://localhost/sevenhairsalon/");
-        exit();
+    // Kiểm tra email có hợp lệ không (không chứa ký tự đặc biệt)
+    if (!isValidEmail($email)) {
+        echo "<script>alert('Email không được chứa ký tự đặc biệt. Vui lòng nhập lại email hợp lệ.');</script>";
     } else {
-        echo "Lỗi: " . $sql . "<br>" . $conn->error;
+        // Kiểm tra xem email đã tồn tại chưa
+        $checkEmail = "SELECT * FROM users WHERE email = '$email'";
+        $resultEmail = $conn->query($checkEmail);
+
+        // Kiểm tra xem tên người dùng đã tồn tại chưa
+        $checkUsername = "SELECT * FROM users WHERE username = '$username'";
+        $resultUsername = $conn->query($checkUsername);
+
+        if ($resultEmail->num_rows > 0) {
+            // Nếu email đã tồn tại, thông báo lỗi
+            echo "<script>alert('Email đã tồn tại. Vui lòng sử dụng email khác.');</script>";
+        } elseif ($resultUsername->num_rows > 0) {
+            // Nếu tên người dùng đã tồn tại, thông báo lỗi
+            echo "<script>alert('Tên người dùng đã tồn tại. Vui lòng chọn tên người dùng khác.');</script>";
+        } else {
+            // Nếu email và tên người dùng chưa tồn tại, thực hiện đăng ký
+            $sql = "INSERT INTO users (username, email, password) VALUES ('$username', '$email', '$password')";
+            if ($conn->query($sql) === TRUE) {
+                // Đăng ký thành công, lưu thông tin vào session
+                session_start(); // Bắt đầu session
+                $_SESSION['username'] = $username;
+                $_SESSION['email'] = $email;
+                
+                // Điều hướng người dùng về trang chủ sau khi đăng ký thành công
+                header("Location: http://localhost/sevenhairsalon/");
+                exit();
+            } else {
+                echo "Lỗi: " . $sql . "<br>" . $conn->error;
+            }
+        }
     }
 }
+
+// Đóng kết nối cơ sở dữ liệu
+$conn->close();
 ?>
 
+
+<!-- Form đăng ký -->
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -126,7 +159,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <form action="register.php" method="POST">
         <div class="form-group">
             <label for="username">Tên</label>
-            <input type="text" id="username" name="username" placeholder="Nhập họ tên" required>
+            <input type="text" id="username" name="username" placeholder="Nhập tên" required>
         </div>
         <div class="form-group">
             <label for="email">Email</label>
