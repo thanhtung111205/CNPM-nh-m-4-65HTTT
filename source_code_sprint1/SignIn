@@ -17,20 +17,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "Vui lòng nhập đầy đủ thông tin.";
     } else {
         // Truy vấn kiểm tra tài khoản
-        $sql = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
+        $sql = "SELECT * FROM users WHERE username = '$username'";
         $result = $conn->query($sql);
 
         if ($result->num_rows > 0) {
-            // Đăng nhập thành công, lưu thông tin vào session
-            session_start(); // Bắt đầu session
-            $_SESSION['username'] = $username; // Lưu username vào session
+            // Lấy dữ liệu người dùng từ cơ sở dữ liệu
+            $user = $result->fetch_assoc();
 
-            // Điều hướng người dùng về trang chủ sau khi đăng nhập thành công
-            header("Location: http://localhost/sevenhairsalon/");
-            exit();
+            // Kiểm tra mật khẩu đã mã hóa
+            if (password_verify($password, $user['password'])) {
+                // Đăng nhập thành công, lưu thông tin vào session
+                session_start(); // Bắt đầu session
+                $_SESSION['username'] = $username; // Lưu username vào session
+
+                // Điều hướng người dùng về trang chủ sau khi đăng nhập thành công
+                header("Location: http://localhost/sevenhairsalon/");
+                exit();
+            } else {
+                // Mật khẩu không đúng
+                echo "Tên hoặc mật khẩu không đúng!";
+            }
         } else {
-            // Đăng nhập thất bại
-            echo "Tên hoặc mật khẩu không đúng!";
+            // Tên người dùng không tồn tại
+            echo "Tên người dùng không tồn tại!";
         }
     }
 }
@@ -133,7 +142,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <form action="login.php" method="POST">
             <div class="form-group">
                 <label for="username">Tên</label>
-                <input type="text" id="username" name="username" placeholder="Nhập họ tên" required>
+                <input type="text" id="username" name="username" placeholder="Nhập tên" required>
             </div>
             <div class="form-group">
                 <label for="password">Mật khẩu</label>
@@ -146,4 +155,3 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </body>
 </html>
-
