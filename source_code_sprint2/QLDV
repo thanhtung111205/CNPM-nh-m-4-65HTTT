@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý dịch vụ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #1E88E5;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .service-card {
+            background-color: #90caf9;
+            border-radius: 8px;
+            width: 120px;
+            height: 120px;
+            text-align: center;
+            padding: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .service-card.selected {
+            border: 2px solid #1565C0;
+            background-color: #64b5f6;
+        }
+
+        .service-card p {
+            margin: 5px 0;
+        }
+
+        .buttons {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .buttons button {
+            background-color: #1E88E5;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .buttons button:hover {
+            background-color: #1565C0;
+        }
+
+        .buttons button:active {
+            background-color: #0D47A1;
+        }
+
+        .form-popup {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: white;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            display: none;
+        }
+
+        .form-popup input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-popup button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .form-popup .save {
+            background-color: #1E88E5;
+            color: white;
+        }
+
+        .form-popup .cancel {
+            background-color: #ccc;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <header>
+                QUẢN LÝ DỊCH VỤ
+    </header>
+
+    <div class="container" id="service-list">
+        <!-- Các dịch vụ sẽ được hiển thị tại đây -->
+        <div class="service-card" onclick="selectService(this)">
+            <p><strong>Dịch vụ 1</strong></p>
+            <p>Giá: 100,000</p>
+            <p>Thời gian: 30'</p>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <button onclick="showAction('add')">Thêm</button>
+        <button onclick="showAction('edit')">Cập nhật</button>
+        <button onclick="showAction('delete')">Xóa</button>
+    </div>
+
+    <div class="form-popup" id="form-popup">
+        <input type="text" id="service-name" placeholder="Tên dịch vụ">
+        <input type="text" id="service-price" placeholder="Giá">
+        <input type="text" id="service-time" placeholder="Thời gian">
+        <button class="save" onclick="saveService()">Lưu</button>
+        <button class="cancel" onclick="hideForm()">Hủy</button>
+    </div>
+
+    <script>
+        let selectedService = null;
+        let currentAction = null; // 'add', 'edit', hoặc 'delete'
+
+        // Lưu hành động hiện tại và hiển thị thông báo
+        function showAction(action) {
+            currentAction = action;
+            if (action === 'add') {
+                showForm('add');
+            } else if (action === 'edit') {
+                alert('Vui lòng chọn một dịch vụ để cập nhật.');
+            } else if (action === 'delete') {
+                alert('Vui lòng chọn một dịch vụ để xóa.');
+            }
+        }
+
+        // Chọn một dịch vụ
+        function selectService(service) {
+            if (!currentAction) {
+                alert('Vui lòng chọn chức năng trước!');
+                return;
+            }
+
+            if (currentAction === 'edit') {
+                selectedService = service;
+                service.classList.add('selected');
+                showForm('edit');
+            } else if (currentAction === 'delete') {
+                if (confirm('Bạn có chắc chắn muốn xóa dịch vụ này?')) {
+                    service.remove();
+                }
+                selectedService = null;
+                currentAction = null;
+            }
+        }
+
+        // Hiển thị form thêm hoặc cập nhật dịch vụ
+        function showForm(mode) {
+            formMode = mode;
+
+            document.getElementById('form-popup').style.display = 'block';
+
+            if (mode === 'edit' && selectedService) {
+                const name = selectedService.querySelector('strong').textContent;
+                const price = selectedService.querySelector('p:nth-child(2)').textContent.replace('Giá: ', '');
+                const time = selectedService.querySelector('p:nth-child(3)').textContent.replace('Thời gian: ', '');
+
+                document.getElementById('service-name').value = name;
+                document.getElementById('service-price').value = price;
+                document.getElementById('service-time').value = time;
+            } else {
+                document.getElementById('service-name').value = '';
+                document.getElementById('service-price').value = '';
+                document.getElementById('service-time').value = '';
+            }
+        }
+
+        // Ẩn form
+        function hideForm() {
+            document.getElementById('form-popup').style.display = 'none';
+        }
+
+        // Lưu dịch vụ mới hoặc cập nhật
+        function saveService() {
+            const name = document.getElementById('service-name').value.trim();
+            const price = document.getElementById('service-price').value.trim();
+            const time = document.getElementById('service-time').value.trim();
+
+            if (name === '' || price === '' || time === '') {
+                alert('Dịch vụ không rõ ràng. Vui lòng nhập lại thông tin');
+                return;
+            }
+
+            if (formMode === 'add') {
+                const serviceList = document.getElementById('service-list');
+                const newService = document.createElement('div');
+                newService.className = 'service-card';
+                newService.setAttribute('onclick', 'selectService(this)');
+                newService.innerHTML = `
+                    <p><strong>${name}</strong></p>
+                    <p>Giá: ${price}</p>
+                    <p>Thời gian: ${time}</p>
+                `;
+                serviceList.appendChild(newService);
+            } else if (formMode === 'edit' && selectedService) {
+                selectedService.querySelector('strong').textContent = name;
+                selectedService.querySelector('p:nth-child(2)').textContent = `Giá: ${price}`;
+                selectedService.querySelector('p:nth-child(3)').textContent = `Thời gian: ${time}`;
+            }
+
+            hideForm();
+            selectedService = null;
+            currentAction = null;
+        }
+    </script>
+</body>
+</html>
