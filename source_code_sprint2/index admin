@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seven Hair Salon</title>
+    <style>
+        /* Reset CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #1E88E5;
+            padding: 10px 20px;
+            color: white;
+        }
+
+        header .logo h1 {
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+
+        header .logo p {
+            font-size: 12px;
+        }
+
+        /* Navigation Styles */
+        nav {
+            flex: 1;
+            display: flex;
+            justify-content: space-evenly; /* Chia đều khoảng cách từ trái sang phải */
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            width: 100%; /* Chiếm toàn bộ chiều rộng */
+            justify-content: space-evenly; /* Chia đều khoảng cách */
+        }
+
+        nav ul li {
+            text-align: center;
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: inline-block;
+            padding: 5px 0;
+            position: relative;
+        }
+
+        /* Gạch chân khi mục đang active */
+        nav ul li a::after {
+            content: "";
+            display: block;
+            width: 0;
+            height: 2px;
+            background-color: white;
+            transition: width 0.3s ease;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        nav ul li a.active::after,
+        nav ul li a:hover::after {
+            width: 100%;
+        }
+
+        /* Main Content */
+        main {
+            margin: 20px;
+        }
+
+        section h2 {
+            color: #1E88E5;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-around;
+        }
+
+        .gallery img {
+            width: 200px;
+            height: 250px;
+            object-fit: cover;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .gallery img:hover {
+            transform: scale(1.05);
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+   <header>
+    <div class="logo">
+        <h1>SHS</h1>
+        <p>SEVEN HAIR SALON</p>
+    </div>
+    <nav>
+        <ul>
+            <li><a href="indexadmin.php" >TRANG CHỦ</a></li>
+            <li><a href="QLDV.php">QUẢN LÝ DỊCH VỤ</a></li>
+            <li><a href="LichHenKH.php">LỊCH HẸN KH</a></li>
+            <li><a href="dangnhap.html">ĐĂNG NHẬP</a></li>
+            <li><a href="dangxuat.html">ĐĂNG XUẤT</a></li>
+        </ul>
+    </nav>
+</header>
+    <!-- Main Content -->
+    <main>
+        <!-- Mẫu tóc hot -->
+        <section>
+            <h2>MẪU TÓC HOT</h2>
+            <div class="gallery">
+                <img src="images/mau_toc_1.jpg" alt="Mẫu tóc 1">
+                <img src="images/mau_toc_2.jpg" alt="Mẫu tóc 2">
+                <img src="images/mau_toc_3.jpg" alt="Mẫu tóc 3">
+                <img src="images/mau_toc_4.jpg" alt="Mẫu tóc 4">
+            </div>
+        </section>
+
+        <!-- Màu nhuộm hot -->
+        <section>
+            <h2>MÀU NHUỘM HOT</h2>
+            <div class="gallery">
+                <img src="images/mau_toc_5.jpg" alt="Màu tóc 1">
+                <img src="images/mau_toc_6.jpg" alt="Màu tóc 2">
+                <img src="images/mau_toc_7.jpg" alt="Màu tóc 3">
+                <img src="images/mau_toc_8.jpg" alt="Màu tóc 4">
+            </div>
+        </section>
+    </main>
+</body>
+</html>
+"This is sprint 1 source code" 
