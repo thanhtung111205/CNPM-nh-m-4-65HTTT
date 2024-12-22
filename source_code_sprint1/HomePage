@@ -44,26 +44,6 @@ $is_logged_in = isset($_SESSION['username']); // Kiểm tra nếu session 'usern
         nav a:hover {
             text-decoration: underline;
         }
-        /* Search bar */
-        .search-container {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .search-container input[type="text"] {
-            padding: 5px 10px;
-            font-size: 16px;
-            border: none;
-            border-radius: 5px;
-            width: 300px;
-        }
-        .search-container button {
-            background-color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
         .section {
             margin: 20px auto;
             max-width: 1200px;
@@ -87,6 +67,38 @@ $is_logged_in = isset($_SESSION['username']); // Kiểm tra nếu session 'usern
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+
+        /* Modal confirmation box */
+        .confirm-box {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .confirm-box .box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .confirm-box button {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #2d89ef;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .confirm-box button.cancel {
+            background-color: #ccc;
+        }
     </style>
 </head>
 <body>
@@ -96,12 +108,14 @@ $is_logged_in = isset($_SESSION['username']); // Kiểm tra nếu session 'usern
         <nav>
             <a href="#">TRANG CHỦ</a>
             <a href="#">ĐẶT LỊCH</a>
-            <a href="#">LỊCH CỦA TÔI</a>
+            
 
             <?php if ($is_logged_in): ?>
                 <!-- Hiển thị thông tin người dùng nếu đã đăng nhập -->
                 <span>Chào, <?php echo $_SESSION['username']; ?></span>
-                <a href="logout.php">ĐĂNG XUẤT</a> <!-- Liên kết đăng xuất -->
+		<a href="booking.php">LỊCH CỦA TÔI</a>
+                <!-- Liên kết đăng xuất, gọi JavaScript để hiển thị bảng thông báo -->
+                <a href="javascript:void(0);" onclick="showConfirmLogout()">ĐĂNG XUẤT</a> 
             <?php else: ?>
                 <!-- Hiển thị liên kết đăng nhập và đăng ký nếu chưa đăng nhập -->
                 <a href="login.php">ĐĂNG NHẬP</a>
@@ -125,12 +139,37 @@ $is_logged_in = isset($_SESSION['username']); // Kiểm tra nếu session 'usern
     <div class="section">
         <h2>MÀU NHUỘM HOT</h2>
         <div class="image-grid">
-            <img src="images/mau_toc_5.jpg" alt="Mẫu tóc 1">
-            <img src="images/mau_toc_6.jpg" alt="Mẫu tóc 2">
-            <img src="images/mau_toc_7.jpg" alt="Mẫu tóc 3">
-            <img src="images/mau_toc_8.jpg" alt="Mẫu tóc 4">
+            <img src="images/mau_toc_5.jpg" alt="Mẫu tóc 5">
+            <img src="images/mau_toc_6.jpg" alt="Mẫu tóc 6">
+            <img src="images/mau_toc_7.jpg" alt="Mẫu tóc 7">
+            <img src="images/mau_toc_8.jpg" alt="Mẫu tóc 8">
         </div>
     </div>
+
+    <!-- Modal Confirmation Box for Logout -->
+    <div id="confirmBox" class="confirm-box">
+        <div class="box">
+            <p>Bạn có chắc chắn muốn đăng xuất?</p>
+            <button class="cancel" onclick="closeConfirmBox()">Hủy</button>
+            <button onclick="confirmLogout()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Hiển thị modal confirmation khi người dùng nhấn đăng xuất
+        function showConfirmLogout() {
+            document.getElementById('confirmBox').style.display = 'flex';
+        }
+
+        // Đóng modal nếu người dùng chọn "Hủy"
+        function closeConfirmBox() {
+            document.getElementById('confirmBox').style.display = 'none';
+        }
+
+        // Xác nhận đăng xuất
+        function confirmLogout() {
+            window.location.href = 'logout.php'; // Điều hướng đến trang logout.php để thực hiện đăng xuất
+        }
+    </script>
 </body>
 </html>
-
