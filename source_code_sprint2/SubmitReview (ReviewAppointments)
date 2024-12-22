@@ -1,0 +1,44 @@
+<?php
+session_start();
+include('db.php');
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['user_id'])) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!$data) {
+        echo json_encode(['success' => false, 'error' => 'Dữ liệu JSON không hợp lệ.']);
+        exit();
+    }
+
+    $appointment_id = $data['appointment_id'] ?? null;
+    $rating = $data['rating'] ?? null;
+
+    if (!is_numeric($appointment_id) || !is_numeric($rating)) {
+        echo json_encode(['success' => false, 'error' => 'appointment_id hoặc rating không hợp lệ.']);
+        exit();
+    }
+
+    // Kiểm tra đánh giá đã tồn tại
+    $checkStmt = $conn->prepare("SELECT COUNT(*) AS count FROM reviews WHERE appointment_id = ?");
+    $checkStmt->bind_param("i", $appointment_id);
+    $checkStmt->execute();
+    $result = $checkStmt->get_result();
+    $row = $result->fetch_assoc();
+
+    if ($row['count'] > 0) {
+        echo json_encode(['success' => false, 'error' => 'Đánh giá đã tồn tại.']);
+        exit();
+    }
+
+    // Thêm đánh giá mới
+    $stmt = $conn->prepare("INSERT INTO reviews (appointment_id, rating) VALUES (?, ?)");
+    $stmt->bind_param("ii", $appointment_id, $rating);
+
+    if ($stmt->execute()) {
+        echo json_encode(['success' => true]);
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Lỗi khi thêm đánh giá: ' . $conn->error]);
+    }
+} else {
+    echo json_encode(['success' => false, 'error' => 'Phương thức không hợp lệ hoặc bạn chưa đăng nhập.']);
+}
