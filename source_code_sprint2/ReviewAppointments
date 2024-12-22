@@ -1,0 +1,388 @@
+<?php
+session_start();
+
+// Kiểm tra nếu người dùng chưa đăng nhập
+$is_logged_in = isset($_SESSION['user_id']);
+if (!$is_logged_in) {
+    echo "Session không tồn tại!"; // Ghi rõ thông báo
+    header('Location: login.php');
+    exit();
+}
+
+
+// Bao gồm file kết nối cơ sở dữ liệu
+include('db.php');
+
+// Lấy user_id từ session
+$user_id = $_SESSION['user_id'];
+
+// Truy vấn danh sách lịch hẹn
+$stmt = $conn->prepare("
+    SELECT 
+        appointments.appointment_id,
+        appointments.thoi_gian,
+        appointments.status,
+        appointments.ngay,
+        services.service_name,
+        services.description,
+        services.price,
+        services.duration
+    FROM appointments
+    JOIN services ON appointments.service_id = services.service_id
+    WHERE appointments.user_id = ?
+    ORDER BY appointments.ngay, appointments.thoi_gian
+");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
+
+// Kiểm tra lỗi truy vấn
+if ($result === false) {
+    die("Lỗi truy vấn: " . $conn->error);
+}
+?>
+
+
+<!DOCTYPE html>
+<html lang="vi">
+ <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seven Hair Salon</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+        }
+        header {
+            background-color: #2d89ef;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        nav {
+            display: flex;
+            gap: 20px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: auto;
+        }
+        h2 {
+            text-align: center;
+            color: #2d89ef;
+            margin-bottom: 30px;
+        }
+        .schedule {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: space-between;
+        }
+        .card {
+            flex: 1 1 calc(33% - 20px); /* Chiếm 1/3 chiều rộng của container */
+            max-width: calc(33% - 20px); /* Đảm bảo card không vượt quá 33% */
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            box-sizing: border-box; /* Đảm bảo padding và border không ảnh hưởng đến kích thước */
+            min-height: 250px; /* Đảm bảo card có chiều cao tối thiểu */
+        }
+        .card h2 {
+            font-size: 20px;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center; /* Căn giữa */
+        }
+        .card p {
+            margin: 8px 0;
+            color: #666;
+        }
+        .card p span {
+            font-weight: bold;
+            color: #333;
+        }
+        .status {
+            font-weight: bold;
+        }
+        .status.incomplete {
+            color: red;
+        }
+        .status.complete {
+            color: green;
+        }
+        .button {
+            display: inline-block;
+            margin: 10px 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            color: #fff;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .button.edit {
+            background-color: #2d89ef;
+        }
+        .button.cancel {
+            background-color: #d9534f;
+        }
+        .button.review {
+            background-color: #5cb85c;
+        }
+
+	.button.disabled {
+            background-color: #ccc !important;
+            cursor: not-allowed !important;
+	}
+
+        .button:hover {
+            opacity: 0.9;
+        }
+
+
+        /* Modal confirmation box */
+        .confirm-box {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        .confirm-box .box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .confirm-box button {
+            margin: 10px;
+            padding: 10px 20px;
+            background-color: #2d89ef;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .confirm-box button.cancel {
+            background-color: #ccc;
+        }
+        .button.disabled {
+            background-color: #ccc !important;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .button.review.disabled {
+            background-color: gray !important;
+            color: white;
+        }
+
+        .stars {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+        .stars span {
+            cursor: pointer;
+            color: #ccc;
+        }
+        .stars span.selected {
+            color: #f39c12;
+        }
+
+    </style>
+</head>
+<body>             
+    <!-- Header -->
+<header>
+    <h1>SHS - Seven Hair Salon</h1>
+    <nav>
+        <a href="index.php">TRANG CHỦ</a>
+        <a href="#">ĐẶT LỊCH</a>
+
+        <?php if (isset($_SESSION['user_id'])): ?>
+            <span>Chào, <?php echo $_SESSION['username']; ?></span>
+            <a href="javascript:void(0);" onclick="showConfirmLogout()">ĐĂNG XUẤT</a>
+        <?php else: ?>
+            <a href="login.php">ĐĂNG NHẬP</a>
+            <a href="register.php">ĐĂNG KÍ</a>
+        <?php endif; ?>
+    </nav>
+</header>
+
+<div class="container">
+    <h1>LỊCH CỦA TÔI</h1>
+    <div class="schedule">
+        <?php if ($result->num_rows > 0): ?>
+            <?php while ($row = $result->fetch_assoc()): ?>
+                <?php 
+                    $ngay = date('d/m/Y', strtotime($row['ngay'])); 
+                    $thoi_gian = date('H:i', strtotime($row['thoi_gian']));
+                ?>
+                <div class="card">
+                    <h2><?php echo $ngay; ?></h2>
+                    <p>Tên dịch vụ: <span><?php echo htmlspecialchars($row['service_name']); ?></span></p>
+                    <p>Giá: <span><?php echo number_format($row['price'], 0, ',', '.'); ?> VNĐ</span></p>
+                    <p>Thời gian hoàn thành: <span><?php echo htmlspecialchars($row['duration']); ?></span></p>
+                    <p>Thời gian bắt đầu: <span><?php echo $thoi_gian; ?></span></p>
+                    <p>Trạng thái: 
+                        <span class="status <?php echo ($row['status'] === 'Đã hoàn thành') ? 'complete' : 'incomplete'; ?>">
+                            <?php echo htmlspecialchars($row['status']); ?>
+                        </span>
+                    </p>
+                    <div class="actions">
+                        <?php if ($row['status'] === 'Đã hoàn thành'): ?>
+    				<button class="button review" data-id="<?php echo $row['appointment_id']; ?>" 
+        				onclick="openReviewBox(<?php echo $row['appointment_id']; ?>, '<?php echo $ngay; ?>')">Đánh giá</button>
+                        <?php elseif ($row['status'] === 'Chưa hoàn thành'): ?>
+                            <button class="button edit">Đổi giờ</button>
+                            <button class="button cancel">Hủy lịch</button>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endwhile; ?>
+        <?php else: ?>
+            <p>Bạn chưa có lịch hẹn nào.</p>
+        <?php endif; ?>
+    </div>
+</div>
+
+    <!-- Modal Confirmation Box for Logout -->
+    <div id="confirmBox" class="confirm-box">
+        <div class="box">
+            <p>Bạn có chắc chắn muốn đăng xuất?</p>
+            <button class="cancel" onclick="closeConfirmBox()">Hủy</button>
+            <button onclick="confirmLogout()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Hiển thị modal confirmation khi người dùng nhấn đăng xuất
+        function showConfirmLogout() {
+            document.getElementById('confirmBox').style.display = 'flex';
+        }
+
+        // Đóng modal nếu người dùng chọn "Hủy"
+        function closeConfirmBox() {
+            document.getElementById('confirmBox').style.display = 'none';
+        }
+
+        // Xác nhận đăng xuất
+        function confirmLogout() {
+            window.location.href = 'logout.php'; // Điều hướng đến trang logout.php để thực hiện đăng xuất
+        }
+    </script>
+
+    <!-- Modal đánh giá -->
+<div id="reviewBox" class="confirm-box" style="display: none;">
+    <div class="box">
+        <p id="reviewMessage"></p>
+        <div class="stars" id="starRating">
+            <span data-value="1">★</span>
+            <span data-value="2">★</span>
+            <span data-value="3">★</span>
+            <span data-value="4">★</span>
+            <span data-value="5">★</span>
+        </div>
+        <button class="cancel" onclick="closeReviewBox()">Hủy</button>
+        <button id="submitReview">Gửi</button>
+    </div>
+</div>
+
+<script>
+    let selectedRating = 0;
+    let currentAppointmentId = null;
+
+    // Mở hộp đánh giá
+    function openReviewBox(appointmentId, ngay) {
+        document.getElementById('reviewMessage').innerText = `Đánh giá lịch hẹn ngày ${ngay}`;
+        document.getElementById('reviewBox').style.display = 'flex';
+        currentAppointmentId = appointmentId;
+    }
+
+    // Đóng hộp đánh giá và đặt lại trạng thái
+    function closeReviewBox() {
+        document.getElementById('reviewBox').style.display = 'none';
+        selectedRating = 0;
+        currentAppointmentId = null;
+        document.querySelectorAll('#starRating span').forEach(star => star.classList.remove('selected'));
+    }
+
+    // Lựa chọn số sao
+    document.getElementById('starRating').addEventListener('click', function (e) {
+        if (e.target.tagName === 'SPAN') {
+            const stars = document.querySelectorAll('#starRating span');
+            selectedRating = parseInt(e.target.getAttribute('data-value'));
+            stars.forEach(star => {
+                star.classList.toggle('selected', parseInt(star.getAttribute('data-value')) <= selectedRating);
+            });
+        }
+    });
+
+    // Gửi đánh giá
+    document.getElementById('submitReview').addEventListener('click', function () {
+        if (selectedRating > 0 && currentAppointmentId) {
+            fetch('submit_review.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ appointment_id: currentAppointmentId, rating: selectedRating })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Đổi nút "Đánh giá" thành "Đã đánh giá"
+                        const reviewButton = document.querySelector(`.review[data-id="${currentAppointmentId}"]`);
+                        if (reviewButton) {
+                            reviewButton.innerText = "Đã đánh giá";
+                            reviewButton.disabled = true;
+                            reviewButton.classList.add('disabled');
+                        }
+                        // Đóng hộp đánh giá
+                        closeReviewBox();
+                    } else {
+                        console.error('Lỗi:', data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        } else {
+            alert('Vui lòng chọn số sao để đánh giá.');
+        }
+    });
+</script>
+
+
+
+</body>
+</html>
